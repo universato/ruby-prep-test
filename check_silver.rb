@@ -11,7 +11,7 @@ def check(n)
   answer = $answers[n - 1]
   case question
   when /Which of the following can be inserted into/
-    s = question.slice(/^```\n(.*?)^```\n/m, 1)
+    s = question.slice(/^```ruby\n(.*?)^```\n/m, 1)
     code, output = s.split(/\n\[Output\]\n/)
     options = question.scan(/^- \([a-z]\) `(.*)`/).flatten(1)
     xs = answer.slice(/^\*\*A\d+:.*/).scan(/\(([a-z])\)/).flatten(1).map { |i|
@@ -28,13 +28,13 @@ def check(n)
     result = xs == ys ? "OK" : "NG"
     # puts "Q#{n}: #{result}"
   when /Given the following:/
-    code = question.slice(/^```\n(.*?)^```\n/m, 1)
+    code = question.slice(/^```ruby\n(.*?)^```\n/m, 1)
     options = question.scan(/^- \([a-z]\) (.*)/).flatten(1).map { |i|
       i.slice(/`(.*)`/, 1) || i
     }
     if options.empty?
       options = question.scan(/^\*\([a-z]\).*\n((?:(?!\*\([a-z]\)).*\n)*)/).flatten(1).map { |i|
-        i.slice(/^```\n(.*)^```\n/m, 1) || i
+        i.slice(/^```ruby\n(.*)^```\n/m, 1) || i
       }
     end
     output, = Open3.capture2e($ruby, stdin_data: code)

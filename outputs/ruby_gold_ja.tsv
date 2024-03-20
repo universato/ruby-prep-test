@@ -1,0 +1,1822 @@
+"**Q1. 以下の実行結果を出力するコードがあります。**
+
+```
+class Stack
+  def initialize
+    @contents = []
+  end
+
+  __(1)__
+end
+
+stack = Stack.new
+stack.push(""foo"")
+stack.push(""bar"")
+p stack.pop
+
+[実行結果]
+""bar""
+```
+
+**__(1)__に入る適切な記述を選択してください。(2つ選択)**
+
+*A:*
+```
+[:push, :pop].each do |name|
+  define_method(name) do |*args|
+    @contents.send(name, *args)
+  end
+end
+```
+
+*B:*
+```
+for name in [:push, :pop]
+  define_method(name) do |*args|
+    @contents.send(name, *args)
+  end
+end
+```
+
+*C:*
+```
+[:push, :pop].each do |name|
+  instance_eval(<<-EOF)
+    def #{name}(*args)
+      @contents.send(:#{name}, *args)
+    end
+  EOF
+end
+```
+
+*D:*
+```
+[:push, :pop].each do |name|
+  class_eval(<<-EOF)
+    def #{name}(*args)
+      @contents.send(:#{name}, *args)
+    end
+  EOF
+end
+```"	"**A1:** (A), (D)
+
+[Module#define_method](https://docs.ruby-lang.org/ja/3.1/class/Module.html#I_DEFINE_METHOD)はレシーバにインスタンスメソッドを定義します。ただし、(B)では変数`name`が`Stack#push`と`Stack#pop`で共有されるため、両方とも`@contents.send(:pop, *args)`を呼びます。
+
+[BasicObject#instance_eval](https://docs.ruby-lang.org/ja/3.1/class/BasicObject.html#I_INSTANCE_EVAL)では`def`は特異メソッドを定義しますが、[Module#class_eval](https://docs.ruby-lang.org/ja/3.1/class/Module.html#I_CLASS_EVAL)ではインスタンスメソッドを定義します。"
+"**Q2. 以下のコードがあります。**
+
+```
+module I
+end
+
+module P
+end
+
+class C
+  include I
+  prepend P
+end
+
+p C.ancestors
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:* `[P, C, I, Object, Kernel, BasicObject]`
+
+*B:* `[C, P, I, Object, Kernel, BasicObject]`
+
+*C:* `[C, I, Object, Kernel, BasicObject, P]`
+
+*D:* `[P, I, C, Object, Kernel, BasicObject]`"	"**A2:** (A)
+
+- スーパークラスが明示的に指定されていないクラスは自動的に`Object`を継承します。`Object`は`Kernel`モジュールをmixinし、`BasicObject`を継承しています。
+
+- `include`によってmixinされたモジュールは、継承チェーン上で当該クラスとそのスーパークラスの間に現れます。
+
+- `prepend`によってmixinされたモジュールは、継承チェーン上で当該クラスより前に現れます。
+
+`prepend`が必要なのは、クラスの定義をモジュールのmixinで上書きしたい時だけです。それ以外の場合は`include`で十分で、すでにインクルードされている他のモジュールの機能を上書きすることもできます。"
+"**Q3. 以下の実行結果を出力するコードがあります。** 
+
+```
+x = __(1)__
+p x + 1
+
+[実行結果]
+(4/3)
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `1 / 3r`
+
+*B:* `1 / 3R`
+
+*C:* `1 / %r(3)`
+
+*D:* `1 / 3`"	"**A3:** (A)
+
+数値リテラルの末尾の`r`は`Rational`オブジェクトを生成することを意味します。
+同じ結果を他の方法(例: `1 / 3.to_r`または`Rational(1, 3)`)によって得ることもできます。"
+"**Q4. 以下の実行結果を出力するコードがあります。** 
+
+```
+p (""aaaaaa""..""zzzzzz"").lazy.select { |e| e.end_with?(""f"") }.__(1)__
+
+[実行結果]
+[""aaaaaf"", ""aaaabf"", ""aaaacf""]
+```
+
+**__(1)__に入る適切な記述を選択してください。(複数選択)**
+
+*A:* `first(3)`
+
+*B:* `take(3)`
+
+*C:* `take(3).force`
+
+*D:* `first(3).force`"	"**A4:** (A), (C)
+
+`take`メソッドは`Enumerator::Lazy`によって定義され、列挙が何らかの方法によって強制されるまで実行が遅延されます(このメソッドの返り値は`Enumerator::Lazy`オブジェクトです)。
+
+`Enumerator::Lazy`は`Enumerator`を継承し、`Enumerable`をインクルードしています。
+
+`Enumerator::Lazy`によってオーバーライドされていない`Enumerable`のメソッドの呼び出しは、列挙を強制します。`first(3)`が`.force`の呼び出しを必要としないのはこのためで、操作がただちに実行され`Enumerator::Lazy`ではなく`Array`が返されます。
+
+`Enumerator::Lazy`の`force`は`Enumerable#to_a`のただの別名であることに注意してください。"
+"**Q5. 以下の実行結果を出力するコードがあります。**
+
+```
+def round(n, __(1)__)
+  n.round(__(1)__)
+end
+
+p round(2.5, half: :even)
+
+[実行結果]
+2
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `*`
+
+*B:* `**`
+
+*C:* `..`
+
+*D:* `...`"	"**A5:** (D)
+
+`...`は、キーワード引数やブロックを含め、残りの引数を転送します。"
+"**Q6. 以下のコードがあります。**
+
+```
+class A
+  def foo
+    self.bar
+  end
+
+  private
+
+  def bar
+    ""baz""
+  end
+
+  def self.bar
+    ""quux""
+  end
+end
+
+puts A.new.foo
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+```
+baz
+```
+
+*B:*
+```
+quux
+```
+
+*C:*
+文法エラーが発生する
+
+*D:*
+例外が発生する"	"**A6:** (A)
+
+プライベートメソッドの呼び出し時に明示的にレシーバを指定することはできません。ただし、`self`をレシーバとして指定することはできます。"
+"**Q7. 以下の実行結果を出力するコードがあります。** 
+
+```
+class Greeter
+  class << self
+    def hello
+      puts ""Hello there!""
+    end
+  end
+end
+
+__(1)__
+
+[実行結果]
+Hello there!
+```
+
+**__(1)__に入る適切な記述を選択してください。(2つ選択)**
+
+*A:* `Greeter.new.hello`
+
+*B:* `Greeter.hello`
+
+*C:* `Greeter.new.class.hello`
+
+*D:* `Greeter.class.new.hello`"	"**A7:** (B), (C)
+
+`class << ...`構文はオブジェクトの特異クラスを定義するために使用され、特定のオブジェクトにメソッドを定義することができます。
+
+Rubyではクラスもオブジェクトであるため、次のようにクラスにメソッドを追加することができます。
+
+```
+class << Greeter
+  def hello
+    # ...
+  end
+end
+```
+
+しかし、問題文のようにクラス定義の中で`class << self`を使用する方が一般的です。"
+"**Q8: 以下の実行結果を出力するコードがあります。**
+
+```
+__(1)__
+
+p multiply_by(4) { 2 + 3 }
+
+[実行結果]
+20
+```
+
+**__(1)__に入る適切な記述を選択してください。(2つ選択)**
+
+*A:*
+
+```
+def multiply_by(n, &block)
+  n * block.call
+end
+```
+
+*B:*
+
+```
+def multiply_by(n, &block)
+  n * block
+end
+```
+
+*C:*
+
+```
+def multiply_by(n)
+  n * yield
+end
+```
+
+*D:*
+
+```
+def multiply_by(n)
+  n * yield.call
+end
+```"	"**A8:** (A), (C)
+
+メソッド定義で指定されているかどうかに関らず、Rubyのすべてのメソッドはブロックを受け付けます。
+
+予約語`yield`はブロックを暗黙的に呼ぶために使用されます。
+`&block`はブロックを`Proc`オブジェクトに変換するために使用され、`call()`によってブロックを呼び出したり、他のメソッドに渡したりすることができます。"
+"**Q9: 以下の実行結果を出力するコードがあります。** 
+
+```
+__(1)__
+
+p sum { |e| e << 1 << 5 << 7 }
+
+[実行結果]
+13
+```
+
+**__(1)__に入る適切な記述を選択してください。(2つ選択)**
+
+*A:*
+
+```
+def sum(&block)
+  array = []
+  
+  block(array)
+  
+  array.reduce(:+)
+end
+```
+
+*B:*
+```
+def sum(&block)
+  array = []
+  
+  block.call(array)
+  
+  array.reduce(:+)
+end
+```
+
+*C:*
+```
+def sum
+  array = []
+  
+  yield(array)
+  
+  array.reduce(:+)
+end
+```
+
+*D:*
+```
+def sum
+  array = []
+  
+  yield.call(array)
+  
+  array.reduce(:+)
+end
+```"	"**A9:** (B), (C)
+
+- `yield`によってブロックに引数を渡して呼ぶ場合は、`yield(x)`のように関数風に記述します。
+- `Proc`オブジェプトによってブロックを呼ぶ場合は、引数を`call()`メソッドに渡します。"
+"**Q10. 以下のコードがあります。** 
+
+```
+class A
+  @@x = 1
+end
+
+class B < A
+  def self.x
+    @@x
+  end
+end
+
+class C < A
+  def self.inc
+    @@x += 1
+  end
+end
+
+C.inc
+p B.x
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+- *A:* `1`
+
+- *B:* `2`
+
+- *C:* `3`
+
+- *D:* 例外が発生する"	"**A10:** (B)
+
+クラス変数は一つのクラス内で共有されるだけでなく、継承階層の下位にも共有されます。しがたって`A`に定義された`@@x`は、子クラスの`B`と`C`にも共有され、同じ変数が参照されます。
+
+クラス変数はRubyのもっとも複雑な機能の一つで、このガイドでは基本的な動作についてのみ説明します。"
+"**Q11. 以下の実行結果を出力するコードがあります。**
+
+```
+words = [""apple"", ""banana"", ""cabbage""]
+pop = Proc.new { words.pop }
+3.times{ puts __(1)__ }
+
+[実行結果]
+cabbage
+banana
+apple
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `pop.load`
+
+*B:* `pop.send`
+
+*C:* `pop.run`
+
+*D:* `pop.call`
+
+*E:* `pop.eval`"	"**A11:** (D)
+
+`Proc`オブジェクトはブロックをカプセル化し、後で`Proc#call`によって呼び出すことを可能にします。`Proc`オブジェクトはクロージャを形成し、`Proc`オブジェクトが生成された時のローカル変数をブロックに結び付けます。"
+"**Q12. 以下の実行結果を出力するコードがあります。**
+
+```
+words = [""apple"", ""banana"", ""cabbage""]
+pop = __(1)__{ words.pop }
+3.times{ puts pop.call }
+
+[実行結果]
+cabbage
+banana
+apple
+```
+
+**__(1)__に入る適切な記述を選択してください。(2つ選択)**
+
+*A:* `Proc.new`
+
+*B:* `Block.new`
+
+*C:* `lambda`
+
+*D:* `Lambda.new`"	"**A12:** (A), (C)
+
+`Proc.new`と`lambda`はいずれも`Proc`オブジェクトを生成しますが、その挙動はまったく同じというわけではありません。
+
+- `lambda`によって生成された`Proc`は引数のチェックが厳密なのに対し、通常の`Proc`は使用されない引数を無視します。
+
+- `lambda`内での`return`はその`lambda`自体から返りますが、通常の`Proc`内での`return`はブロックが記述されたメソッドから返ります。"
+"**Q13. 以下の実行結果を出力するコードがあります。**
+
+```
+add = __(1)__
+puts add.call(""hello"")
+
+[実行結果]
+HELLO
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `->(e) { e.upcase }`
+
+*B:* `\(e) -> { e.upcase }`
+
+*C:* `-> { (e) e.upcase }`
+
+*D:* `-> { |e| e.upcase }`"	"**A13:** (A)
+
+`->(...) { }`(ラムダリテラル)構文は`lambda { |...| }`と同等の省略記法です。"
+"**Q14. 以下の実行結果を出力するコードがあります。**
+
+```
+__(1)__
+  x + y
+end
+
+p add(1, 2)
+
+[実行結果]
+3
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `add = ->(x, y) do`
+
+*B:* `add = lambda do |x, y|`
+
+*C:* `add = Proc.new do |x, y|`
+
+*D:* `define_method(:add) do |x, y|`"	"**A14:** (D)
+
+トップレベルの`define_method`は`Object`にメソッドを定義します。
+
+(A), (B), (C)では`Proc`を生成してローカル変数`add`に代入していますが、`add(1, 2)`は`Proc`を呼び出しません。"
+"**Q15. 以下のコードがあります。**
+
+```
+def reader_method(s)
+  <<~EOF
+    def #{s}
+      @#{s}
+    end
+  EOF
+end
+
+print reader_method(""foo"")
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+```
+    def foo
+      @foo
+    end
+```
+
+*B:*
+```
+  def foo
+    @foo
+  end
+```
+
+*C:*
+```
+def foo
+  @foo
+end
+```
+
+*D:*
+文法エラーが発生する"	"**A15:** (C)
+
+`<<~EOF`はsquiggly heredocと呼ばれ、先頭の空白が除去されます。"
+"**Q16. 以下の実行結果を出力するコードがあります。**
+
+```
+obj = Object.new
+
+def obj.hello
+  puts ""Hi!""
+end
+
+copy = __(1)__
+
+copy.hello
+
+[実行結果]
+Hi!
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `Marshal.load(Marshal.dump(obj))`
+
+*B:* `obj.dup`
+
+*C:* `obj.clone`
+
+*D:* `obj.copy`"	"**A16:** (C)
+
+補足説明です。
+
+- `Object#dup`はオブジェクトの特異メソッドをコピーしません。
+- `Marshal.dump`は特異メソッドをもつオブジェクトをシリアライズできません。
+- `Object#copy`というメソッドはありません。"
+"**Q17. 以下の実行結果を出力するコードがあります。**
+
+```
+class ShoppingList
+  def initialize
+    @items = []
+  end
+
+  def add_item(item)
+    @items << item
+  end
+
+  def __(1)__
+    @items.map { |e| ""- #{e}"" }.join(""\n"")
+  end
+end
+
+list = ShoppingList.new
+
+list.add_item(""Milk"")
+list.add_item(""Bread"")
+list.add_item(""Eggs"")
+
+puts list
+
+[実行結果]
+- Milk
+- Bread
+- Eggs
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `to_s`
+
+*B:* `to_str`
+
+*C:* `inspect`
+
+*D:* `puts`"	"**A17:** (A)
+
+多くのRubyのメソッド(`Kernel#puts`を含む)はオブジェクトを文字列に変換する際に`to_s`を呼び出します。`Object#to_s`のデフォルトの実装は、以下のように単純で一般的な出力を行います。
+
+`#<ShoppingList:0x007fb651918610>`
+
+`to_s`をオーバーライドすると、問題文のようによりよい文字列表現を提供することができます。"
+"**Q18. 以下の実行結果を出力するコードがあります。**
+
+```
+class ShoppingList
+  def initialize
+    @items = []
+  end
+
+  def add_item(item)
+    @items << item
+  end
+
+  def __(1)__
+    ""ShoppingList:\n  @items: #{@items.inspect}""
+  end
+end
+
+list = ShoppingList.new
+
+list.add_item(""Milk"")
+list.add_item(""Bread"")
+list.add_item(""Eggs"")
+
+p list
+
+[実行結果]
+ShoppingList:
+  @items: [""Milk"", ""Bread"", ""Eggs""]
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `to_s`
+
+*B:* `to_str`
+
+*C:* `inspect`
+
+*D:* `p`"	"**A18:** (C)
+
+`Kernel#p`は引数に対して`inspect`を呼び出してデバッグ用途の文字列に変換します。`Object#inspect`のデフォルトの機能は基本的な情報を提供しますが、特定のクラスやオブジェクトでオーバーライドすることでカスタマイズできます。"
+"**Q19. 以下の実行結果を出力するコードがあります。**
+
+```
+p __(1)__.flat_map {|z|
+  (1..z).flat_map {|x|
+    (x..z).select {|y|
+      x**2 + y**2 == z**2
+    }.map {|y|
+      [x, y, z]
+    }
+  }
+}.take(3).to_a
+
+[実行結果]
+[[3, 4, 5], [6, 8, 10], [5, 12, 13]]
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `(1..-1).delay`
+
+*B:* `(1..).delay`
+
+*C:* `(1..-1).lazy`
+
+*D:* `(1..).lazy`"	"**A19:** (D)
+
+`x..`は半無限区間を表現します。
+
+[Enumerable#lazy](https://docs.ruby-lang.org/ja/3.1/class/Enumerable.html#I_LAZY)はEnumerator::Lazyを返します。Enumerator::LazyはEnumerableの多くのメソッドを再定義しており、列挙を必要になった時まで遅延させます。"
+"**Q20. 以下の実行結果を出力するコードがあります。**
+
+```
+ary = [""foo"", ""bar"", nil, ""baz""]
+
+p ary.__(1)__ { |i|
+  i&.upcase
+}
+
+[実行結果]
+[""FOO"", ""BAR"", ""BAZ""]
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `map`
+
+*B:* `filter_map`
+
+*C:* `collect`
+
+*D:* `collect_compact`"	"**A20: (B)**
+
+[Enumerable#filter_map](https://docs.ruby-lang.org/ja/3.1/class/Enumerable.html#I_FILTER_MAP)はブロックが返した値のうち、真の値だけを配列として返します。"
+"**Q21. 以下のコードがあります。**
+
+```
+a, b, *c = [""apple"", ""banana"", ""carrot"", ""daikon""]
+
+p c
+```
+
+**実行結果として正しいものを選択してください。**
+
+*A:* `[""apple"", ""banana"", ""carrot"", ""daikon""]`
+
+*B:* `""carrot""`
+
+*C:* `[""carrot""]`
+
+*D:* `[""carrot"", ""daikon""]`"	"**A21: (D)**
+
+splat演算子(`*`)はすべての残りの右辺値を配列として一つの変数に代入します。"
+"**Q22: 以下の実行結果を出力するコードを選択してください。(1つ選択)**
+
+```
+[実行結果]
+[[""apple"", ""banana"", ""carrot""]]
+```
+
+*A:*
+```
+def fx(*args)
+  p(args)
+end
+fx(*[""apple"", ""banana"", ""carrot""])
+```
+
+*B:*
+```
+def fx(*args)
+  p(args)
+end
+fx([""apple"", ""banana"", ""carrot""])
+```
+
+*C:*
+```
+def fx(*args)
+  p(args)
+end
+fx(""apple"", ""banana"", ""carrot"")
+```
+
+*D:*
+```
+def fx(*args)
+  p(*args)
+end
+fx([""apple"", ""banana"", ""carrot""])
+```"	"**A22:** (B)
+
+splat演算子(`*`)は、メソッドの引数で使用された場合、残りのすべての引数を配列として一つの引数で参照できるようにします。回答の*(B)*では、`fx(*args)`は0個以上の引数を取り、すべての引数を配列`args`で保持します。`fx([""apple"", ""banana"", ""carrot""])`が呼び出されると単一の引数である配列が引数のリストを表す配列の中に配置され、`args`は`[[""apple"",""banana"",""carrot""]]`を参照します。"
+"**Q23. 以下の実行結果を出力するコードがあります。**
+
+```
+p [""foo"", ""bar"", ""baz""].map { __(1)__.upcase }
+
+[実行結果]
+[""FOO"", ""BAR"", ""BAZ""]
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `_1`
+
+*B:* `$1`
+
+*C:* `$_`
+
+*D:* `it`"	"**A23:** (A)
+
+`_1`, `_2`, `_3`...は暗黙に定義されるブロックパラメータで、ナンバードパラメータと呼ばれます。"
+"**Q24. 以下のコードがあります。**
+
+```
+def fx(a:, b: ""apple"")
+  p a
+  p b
+end
+
+fx(b: ""banana"")
+```
+
+**実行結果として正しいものを選択してください。**
+
+*A:*
+```
+nil
+apple
+```
+
+*B:*
+```
+nil
+banana
+```
+
+*C:*
+文法エラーが発生する
+
+*D:*
+例外が発生する"	"**A24:** (D)
+
+必要なキーワード引数が指定されなかった場合、`ArgumentError`が発生します。"
+"**Q25. 以下の実行結果を出力するコードがあります。**
+
+```
+def add(x:, y:, **params)
+  z = x + y
+
+  params[:round] ? z.round : z
+end
+
+__(1)__
+
+[実行結果]
+7
+```
+
+**__(1)__に入る適切な記述を選択してください。(3つ選択)**
+
+*A:* `p add(x: 2.75, y: 5.25, round: true)`
+
+*B:* `p add(x: 3.75, y: 3, round: true)`
+
+*C:* `options = {:round => true}; p add(x: 3.75, y: 3, **options)`
+
+*D:* `p add(x: 3, y: 4)`
+
+*E:* `p add(x: 7)`"	"**A25:**  (B), (C), (D)
+
+キーワード引数を使用する際、`**`演算子は明示的に指定されなかったキーワード引数をHashで受け取るために使用できます。
+
+`**`演算子は、メソッド呼び出しの際にHashをキーワード引数に変換するために使用することもできます。"
+"**Q26: 以下の実行結果を出力するコードがあります。**
+
+```
+class Speaker
+  @message = ""Hello!""
+
+  class << self
+    @message = ""Howdy!""
+
+    def speak
+      @message
+    end
+  end
+end
+
+__(1)__
+
+[実行結果]
+Hello!
+```
+
+**__(1)__に入る適切な記述を選択してください。(2つ選択)**
+
+*A:* `puts Speaker.speak`
+
+*B:* `puts Speaker.singleton_class.speak`
+
+*C:* `puts Speaker.instance_variable_get(:@message)`
+
+*D:* `puts Speaker.singleton_class.instance_variable_get(:@message)`"	"**A26:** (A), (C)
+
+Rubyではクラスはオブジェクトなので、クラスのインスタンス変数を定義することができます。
+
+すべてのオブジェクトは、クラスも含め、特異クラスをもちます。
+
+この例では、`Speaker`クラスとその特異クラスに`@message`というインスタンス変数が定義されています。これらは別々の変数です。
+
+特異メソッド`Speaker.speak`は`Speaker`クラスのコンテキストで評価され、`@message`は特異クラスのインスタンス変数ではなく`Speaker`クラスのインスタンス変数を参照します。"
+"**Q27. 以下のコードがあります。**
+
+```
+class Speaker
+  @message = ""Hello!""
+
+  class << self
+    @message = ""Howdy!""
+  end
+end
+
+class << Speaker
+  p @message
+end
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:* `""Hello!""`
+
+*B:* `""Howdy!""`
+
+*C:* `nil`
+
+*D:* 文法エラーが発生する"	"**A27:** (B)
+
+この例では、`class << Speaker`は`Speaker`の特異クラス定義を再オープンし、そこでの`@message`は特異クラスに直接定義されたインスタンス変数を参照します。"
+"**Q28. 以下の実行結果を出力するコードがあります。**
+
+```
+def x
+  puts ""x""
+end
+
+def y
+  puts ""y""
+  throw :done
+end
+
+def z
+  puts ""z""
+end
+
+
+__(1)__ do
+  x
+  y
+  z
+end
+
+puts ""done!""
+
+[実行結果]
+x
+y
+done!
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `try`
+
+*B:* `catch`
+
+*C:* `catch :done`
+
+*D:* `rescue`"	"**A28:** (C)
+
+`catch`ブロックでは、`throw`が実行されるまでコードが実行されます。`catch`に対応するシンボルが`throw`に渡されると、Rubyはブロックの実行を終了し、ブロックの次の処理から実行を継続します。
+
+`catch`が`throw`に対応しない場合は、外側の`catch`が内側から順番に探され、トップレベルに到達すると例外が発生します。"
+"**Q29. 以下の実行結果を出力するコードがあります。**
+
+```
+letters = catch(:done) do
+  (""a""..""z"").each do |a|
+    (""a""..""z"").each do |b|
+      (""a""..""z"").each do |c|
+        if a < b && b < c
+          __(1)__
+        end
+      end
+    end
+  end
+end
+
+puts letters.join
+
+[実行結果]
+abc
+```
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `throw [a,b,c]`
+
+*B:* `throw [a,b,c], :done`
+
+*C:* `throw :done, [a,b,c]`
+
+*D:* `raise :done, [a,b,c]`"	"**A29:** (C)
+
+2引数の`throw`が使用された場合、2番目の引数が対応する`catch`の呼び出しの値として返されます。"
+"**Q30. 以下の実行結果を出力するコードがあります。**
+
+```
+begin
+  __(1)__
+rescue
+  puts ""OK""
+end
+
+[実行結果]
+OK
+```
+
+**__(1)__に入る適切な記述を選択してください。(2つ選択)**
+
+*A:* `raise StandardError`
+
+*B:* `raise Exception`
+
+*C:* `raise ArgumentError`
+
+*D:* `raise ScriptError`"	"**A30:** (A), (C)
+
+問題文のクラスの継承チェーンはそれぞれ以下のとおりです。
+
+```
+ArgumentError < StandardError < Exception
+
+ScriptError < Exception
+```
+
+`rescue`に特定の例外クラスが指定されなかった場合、デフォルトで`StandardError`とそのサブクラスが捕捉されます。ほとんどの組み込み例外クラスは`StandardError`のサブクラスですが、通常捕捉されることを想定していないいくつかの例外クラスは`Exception`を直接継承しています。"
+"**Q31. 以下のコードがあります。**
+
+```
+AnError = Class.new(Exception)
+
+begin
+  raise AnError
+rescue
+  puts ""Bare rescue""
+rescue StandardError
+  puts ""StandardError rescue""
+rescue AnError
+  puts ""AnError rescue""
+rescue Exception
+  puts ""Exception rescue""
+end
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+```
+Bare rescue
+```
+
+*B:* 
+```
+StandardError rescue
+```
+
+*C:* 
+```
+AnError rescue
+```
+
+*D:* 
+```
+Exception rescue
+```
+
+*E:*
+```
+AnError rescue
+Exception rescue
+```"	"**A31:** (C)
+
+`rescue`に特定の例外クラスが指定されなかった場合、`StandardError`とそのサブクラスが捕捉されます。したがって、`Exception`を直接継承したクラスは捕捉されません。
+
+一つの`begin/end`ブロックでは、複数の`rescue`節がマッチした場合も、最初にマッチした`rescue`節だけが実行されます。"
+"**Q32. 以下のコードがあります。**
+
+```
+AnError = Class.new(Exception)
+
+begin
+  raise AnError
+rescue
+  puts ""Bare rescue""
+rescue StandardError
+  puts ""StandardError rescue""
+rescue Exception
+  puts ""Exception rescue""
+rescue AnError
+  puts ""AnError rescue""  
+end
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+```
+Bare rescue
+```
+
+*B:* 
+```
+StandardError rescue
+```
+
+*C:* 
+```
+AnError rescue
+```
+
+*D:* 
+```
+Exception rescue
+```
+
+*E:*
+```
+Exception rescue
+AnError rescue
+```"	"**A32:** (D)
+
+`rescue Exception`と`rescue AnError`はいずれも発生した例外にマッチしますが、この例では`rescue Exception`が先に指定されているため実行され、残りの`rescue`節は無視されます。"
+"**Q33. 以下のコードがあります。**
+
+```
+begin
+  ""hello"".world
+rescue => ex
+  p ex.class
+end
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:* `StandardError`
+
+*B:* `Exception`
+
+*C:* `NameError`
+
+*D:* `NoMethodError`
+
+*E:* `ArgumentError`"	"**A33:** (D)
+
+`rescue`節で`=>`が使用された場合、発生した例外が変数に代入されます。"
+"**Q34. 以下のコードがあります。**
+
+```
+CustomError = Class.new(StandardError)
+
+def boom
+  raise CustomError 
+rescue
+  raise
+end
+
+begin 
+  boom
+rescue => e
+  p e.class
+end
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:* `CustomError`
+
+*B:* `StandardError`
+
+*C:* `Exception`
+
+*D:* `RuntimeError`
+
+*E:* `SyntaxError`"	"**A34:** (A)
+
+`rescue`節で`raise`が引数なしで呼び出された場合、捕捉された例外が再度`raise`されます。
+
+例外が捕捉されていないコンテキストで`raise`が引数なしで呼び出された場合、デフォルトで`RuntimeError`が`raise`されます。"
+"**Q35. 以下のコードがあります。**
+
+```
+def greeting
+  ""hello""
+ensure
+  puts ""Ensure called!""
+
+  ""hi""
+end
+
+puts greeting
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+
+```
+hello
+```
+
+*B:*
+
+```
+hi
+```
+
+
+*C:*
+
+```
+Ensure called!
+hello
+```
+
+*D:*
+
+```
+Ensure called!
+hi
+```"	"**A35:** (C)
+
+メソッド(または`begin/end`ブロック)の`ensure`節は、例外が発生してもしなくても、常に実行されます。ただし、`ensure`節の値は返り値としては使用されず、`ensure`節が実行される直前の評価結果が返り値として使用されます。"
+"**Q36. 以下のコードがあります。**
+
+```
+class Identity
+  def self.this_object
+    self
+  end
+  
+  def this_object
+    self
+  end
+end
+
+a = Identity.this_object
+b = Identity.this_object
+
+c = Identity.new.this_object
+d = Identity.new.this_object
+
+p a == b
+p c == d
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:* 
+
+```
+true
+true
+```
+
+*B:*
+```
+true
+false
+```
+
+*C:*
+```
+false
+true
+```
+
+*D:*
+```
+false
+false
+```"	"**A36: (B)**
+
+予約語`self`は現在のオブジェクトを表します。クラスメソッドでは、`self`は現在のクラスを表す`Class`インスタンスを参照します。インスタンスメソッドでは、`self`は現在のクラスの特定のインスタンスを参照します。"
+"**Q37. 以下のコードがあります。**
+
+```
+class Identity
+  def self.this_object
+    self.class
+  end
+  
+  def this_object
+    self
+  end
+end
+
+p Identity.this_object.class
+p Identity.new.this_object.class
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+```
+Identity
+Identity
+```
+
+*B:*
+```
+Class
+Identity
+```
+
+*C:*
+```
+Object
+Identity
+```
+
+*D:*
+```
+Class
+Object
+```"	"**A37:** (B)
+
+クラスメソッドでは、`self`は`Class`インスタンスを参照します。
+インスタンスメソッドでは、`self`は現在インスタンス化されているオブジェクトを参照します。"
+"**Q38. 以下のコードがあります。**
+
+```
+module Mixin
+  def this_object
+    self
+  end
+end
+
+class Identity
+  include Mixin
+end
+
+
+p Identity.new.this_object.class
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:* `Mixin`
+
+*B:* `Class`
+
+*C:* `Object`
+
+*D:* `Identity`"	"**A38:** (D)
+
+モジュールのmixinやクラスの継承が使用された複雑な継承チェーンにおいても、`self`は常に現在のコンテキストにおけるオブジェクトを参照します。
+
+この例では、`this_object`は`Mixin`で定義されていますが、`Indentity`クラスにインクルードされており、`self`は`Identity`の特定のオブジェクトを参照します。"
+"**Q39: `Class`の直接のスーパークラスを選択してください。(1つ選択)**
+
+*A:* `Object`
+
+*B:* `Module`
+
+*C:* `BasicObject`
+
+*D:* `Class`"	"**A39:** (B)
+
+`Class`は`Module`のサブクラスですが、クラスオブジェクトはmixinとしては使用できません(つまり、`include`、`extend`、`prepend`に`Class`オブジェクトを渡すことはできません)。
+
+Rubyにおける`Module`と`Class`の継承関係は実装の詳細であり、機能と用途に重複はあるものの、どちらか一方がもう一方の純粋なサブタイプであるというわけではありません。"
+"**Q40. 以下のコードがあります。**
+
+```
+module Mixin
+  def self.greet
+    puts ""Hello World!""
+  end
+end
+
+class SomeClass
+  include Mixin
+end
+```
+
+**以下の記述のうち正しいものを選択してください。(1つ選択)**
+
+*A:* `Mixin.greet`は`Hello World!`を出力し、`SomeClass.greet`は例外を発生する。
+
+*B:* `Mixin.greet`は例外を発生し、`SomeClass.greet`は`Hello World!`を出力する。
+
+*C:* `Mixin.greet`も`SomeClass.greet`も`Hello World!`を出力する。
+
+*D:* `Mixin.greet`も`SomeClass.greet`も`Hello World!`を例外を発生する。"	"**A40:** (A)
+
+この例では`greet`メソッドは`Mixin`モジュール自体の特異メソッドとして定義され、他のクラスにmixinすることはできません。
+
+(モジュールの特異メソッドと他のクラスへmixinするためのメソッドを同時に定義する方法については、`moudle_function`という機能や`extend self`という慣習についての情報を参照してください。)"
+"**Q41. 以下の実行結果を出力するコードがあります。**
+
+```
+module Mixin
+  def greet
+    puts ""Hello World!""
+  end
+end
+
+class SomeClass
+  extend Mixin
+end
+
+__(1)__
+
+[実行結果]
+Hello World!
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `Mixin.greet`
+
+*B:* `SomeClass.new.greet`
+
+*C:* `SomeClass.greet`
+
+*D:* `Mixin.new.greet`"	"**A41:** (C)
+
+`extend`メソッドはモジュールを一つのオブジェクトにmixinするために使用されます。クラス定義で使用された場合は、`extend`はクラス自身にmixinするため、mixinされたメソッドはクラスメソッドして使用できます。
+
+しかし、`extend`はクラス以外のオブジェクトにも使用できます。
+
+```
+obj = Object.new
+obj.extend(Mixin)
+obj.greet
+```"
+"**Q42. 以下の実行結果を出力するコードがあります。**
+
+```
+module Mixin
+  def greet
+    puts ""Hello World!""
+  end
+end
+
+class SomeClass
+  include Mixin
+end
+
+__(1)__
+
+[実行結果]
+Hello World!
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `Mixin.greet`
+
+*B:* `SomeClass.new.greet`
+
+*C:* `SomeClass.greet`
+
+*D:* `Mixin.new.greet`"	"**A42:** (B)
+
+`include`メソッドはモジュールをクラスにmixinし、mixinされたメソッドはインスタンスメソッドとして使用できます。"
+"**Q43. 以下の実行結果を出力するコードがあります。**
+
+```
+class BaseClass
+  private
+
+  def greet
+    puts ""Hello World!""
+  end
+end
+
+class ChildClass < BaseClass
+  __(1)__
+end
+
+
+ChildClass.new.greet
+
+[実行結果]
+Hello World!
+```
+
+**__(1)__に入る記述として不適切なものを選択してください。(1つ選択)**
+
+*A:* 
+
+```
+public :greet
+```
+
+*B:*
+
+```
+protected :greet
+```
+
+*C:*
+
+```
+def greet
+  super
+end
+```
+
+*D:*
+
+```
+alias_method :original_greet, :greet
+
+def greet
+  original_greet
+end
+```"	"**A43:** (B)
+
+`protected`メソッドは同じクラスかそのサブクラスのインスタンスからのみ呼び出すことができます。"
+"**Q44. 以下の実行結果を出力するコードがあります。**
+
+```
+h = [1, 2, 3]
+case h
+__(1)__ [x, y]
+  p [:two, x, y]
+__(1)__  [x, y, z]
+  p [:three, x, y, z]
+end
+
+[実行結果]
+[:three, 1, 2, 3]
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `when`
+
+*B:* `in`
+
+*C:* `if`
+
+*D:* `=>`"	"**A44:** (B)
+
+パターンマッチは構造化された値に対して深いマッチングを行うための機能です。
+
+パターンマッチでは、`case`式で`when`の代りに`in`を使用します。"
+"**Q45. 以下の実行結果を出力するコードがあります。**
+
+```
+class Alphabet
+  include Enumerable
+
+  def initialize
+    @letters = (""A""..""Z"").to_a
+  end
+
+  def __(1)__
+    @letters.each do |e|
+      yield e
+    end
+  end
+end
+
+set = Alphabet.new
+
+p set.take(5)
+p set.select { |e| e > ""W"" }
+
+[実行結果]
+[""A"", ""B"", ""C"", ""D"", ""E""]
+[""X"", ""Y"", ""Z""]
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `all`
+
+*B:* `each`
+
+*C:* `to_a`
+
+*D:* `to_ary`
+
+*E:* `to_enum`"	"**A45:** (B)
+
+`Enumerable`はmixinされるオブジェクトが要素を一つずつブロックに渡す`each`メソッドを実装していることを想定しています。`Enumerable`のさまざまなリスト操作は`each`にもとづいて実装されています。
+
+`Enumerable`をより深く理解するため、`each`を使って他の機能がどのように実装されているか考えてみましょう。例えば、`each`がすでに定義されていれば、`select`は次のように定義できます。
+
+```
+def select(&b)
+  matched = []
+  
+  each { |e| matched << e if b.call(e) }
+  
+  matched
+end
+```
+
+この汎用的なパターンはmixinでは一般的です。mixinの機能は、mixinされるオブジェクトのとてもシンプルな機能にもとづいていて、mixinの機能を使用するためにはちょっとしたグルーコードを書くだけで済みます。"
+"**Q46. 以下のコードがあります。**
+
+```
+class TShirt
+  SIZES = [:xs, :s, :m, :l, :xl, :xxl]
+
+  include Comparable
+
+  def initialize(size)
+    @size = size
+  end
+  
+  attr_reader :size
+
+  def <=>(other)
+    SIZES.index(size) <=> SIZES.index(other.size)
+  end
+end
+
+medium = TShirt.new(:m)
+large  = TShirt.new(:l)
+
+p medium == large
+p medium <  large
+p medium <= large
+p medium >  large
+p medium >= large
+```
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+
+```
+true
+false
+true
+false
+true
+```
+
+*B:*
+```
+false
+true
+true
+false
+false
+```
+
+*C:*
+```
+false
+false
+false
+true
+true
+```
+
+*D:*
+```
+false
+false
+false
+false
+false
+```
+
+*E:*
+例外が発生する"	"**A46:** (B)
+
+`Comparable`モジュールはこの例で使用されているすべての比較メソッド(`<`, `<=`, `==`, `>=`, `>`)を提供しています。
+
+Each of these methods rely on the presence of a `<=>` operator which returns a negative number, zero, or a positive number depending on the sort order of two values. Ruby's core `Numeric` classes all implement this functionality, and so the following example with integers should help clarify:
+これらのメソッドは、2つの要素のソート順序に応じて負の数、0、正の数のいずれかを返す`<=>`演算子に依存しています。Rubyのすべての組み込み数値クラスは、次の整数の例のように、この機能を実装しています。
+
+```
+3 <=> 8 # -1
+8 <=> 8 #  0
+8 <=> 3 #  1
+```
+
+これを使用して、`Comparable#<`は次のように実装することができます。
+
+```
+def <(other)
+  (self <=> other) < 0
+end
+```
+
+`Enumerable`同様に`Comparable`は、モジュールがいかにクラスに小さな機能だけ実装させて、mixinによってモジュールのすべての機能を提供するかを示すよい例です。"
+"**Q47. 以下のコードがあります。**
+
+```
+require ""date""
+
+date = Date.new(2000, 2, 24)
+
+puts(date << 12)
+puts(date >> 12)
+```
+
+**実行結果として正しいものを選択してください。(1つ選択)**
+
+*A:*
+```
+2000-02-12
+2000-03-07
+```
+
+*B:*
+```
+2000-03-07
+2000-02-12
+```
+
+*C:*
+```
+1999-02-24
+2001-02-24
+```
+
+*D:*
+```
+1988-02-24
+2012-02-24
+```"	"**A47:** (C)
+
+`<<`は現在の日付のn月前を表す`Date`オブジェクトを返します。
+
+`>>`は現在の日付のn月後を表す`Date`オブジェクトを返します。
+
+同じ日がその月に存在しない場合(例: 31日まである月と30までの月、うるう年とそれ以外の年などのケース)、`<<`と`>>`はその月の最後の有効な日付を返します。
+
+```
+puts(Date.new(2016,2,29) << 12) #=> 2015-02-28
+puts(Date.new(2016,12,31) << 1) #=> 2016-11-30
+puts(Date.new(2016,12,31) << 2) #=> 2016-10-31
+```"
+"**Q48. 以下の実行結果を出力するコードがあります。**
+
+```
+require ""time""
+
+t = Time.__(1)__(""00000024021993"", ""%S%M%H%d%m%Y"")
+puts t.iso8601
+
+[実行結果]
+1993-02-24T00:00:00+09:00
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `format`
+
+*B:* `parse`
+
+*C:* `strftime`
+
+*D:* `strptime`"	"**A48:** (D)
+
+[Time.strptime](https://docs.ruby-lang.org/ja/3.1/class/Time.html#C_STRPTIME)は文字列を与えられたテンプレートによって解析し、`Time`オブジェクトを返します。
+
+[Time.parse](https://docs.ruby-lang.org/ja/3.1/class/Time.html#C_PARSE)はヒューリスティックを使用して文字列を解析し、テンプレートは受け取りません。"
+"**Q49. 以下の実行結果を出力するコードがあります。**
+
+```
+require ""singleton""
+
+class Foo
+  __(1)__
+end
+
+x = Foo.instance
+y = Foo.instance
+p x.equal?(y)
+
+[実行結果]
+true
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `include Singleton`
+
+*B:* `extend Singleton`
+
+*C:* `using Singleton`
+
+*D:* `singletonize`"	"**A49:** (A)
+
+`Singleton`モジュールはSingletonパターンを実装します。
+
+`include Singleton`はクラスの唯一のインスタンスを返す`instance`メソッドを追加します。"
+"**Q50. 以下の実行結果を出力するコードがあります。**
+
+```
+require 'forwardable'
+
+class List
+  extend Forwardable
+
+  def initialize
+    @contents = []
+  end
+
+  __(1)__ :@contents, :push
+  __(1)__ :@contents, :[]
+end
+
+list = List.new
+list.push(""a"")
+list.push(""b"")
+list.push(""c"")
+p list[1]
+
+[実行結果]
+""b""
+```
+
+**__(1)__に入る適切な記述を選択してください。(1つ選択)**
+
+*A:* `forward`
+
+*B:* `def_forwarder`
+
+*C:* `def_delegator`
+
+*D:* `define`"	"**A50:** (C)
+
+`Forwardable`モジュールは、[Forwardable.def_delegator](https://docs.ruby-lang.org/ja/3.1/class/Forwardable.html#I_DEF_DELEGATOR)を使用して、指定されたメソッドを特定のオブジェクトに委譲します。"

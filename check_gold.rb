@@ -34,7 +34,7 @@ def check(n)
       o == output ? i : nil
     }
     result = xs == ys ? "OK" : "NG"
-    puts "Q#{n}: #{result}"
+    # puts "Q#{n}: #{result}"
   when /Which option corresponds to the execution result\?/
     code = question.slice(/^```\n(.*?)^```\n/m, 1)
     options = question.scan(/^(?:- )?\*[A-Z]:\* (.+)/).flatten(1).map { |i|
@@ -65,16 +65,30 @@ def check(n)
       end ? i : nil
     }
     result = xs == ys ? "OK" : "NG"
-    puts "Q#{n}: #{result}"
+    # puts "Q#{n}: #{result}"
   else
-    puts "Q#{n}: ?"
+    # puts "Q#{n}: ?"
   end
+  puts "Q#{n}: #{result || '?'}"
+  result
 end
 
 if ARGV[0]
   check(ARGV[0].to_i)
 else
+  counts = {"OK" => 0, "NG" => 0, nil => 0 }
+  ng_list = []
+  unknown_list = []
   (1..50).each do |i|
-    check(i)
+    result = check(i)
+    counts[result] += 1
+    if result == "NG"
+      ng_list << i
+    elsif result == nil
+      unknown_list << i
+    end
   end
+  puts counts
+  puts "NG: #{ng_list}"
+  puts "? : #{unknown_list}"
 end

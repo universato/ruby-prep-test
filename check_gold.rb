@@ -13,12 +13,12 @@ def check(n)
   case question
   when /Assume that the following code must have the stated execution result|Which code produces the following execution result\?/
     question_type = 1
-    s = question.slice(/^```\n(.*?)^```\n/m, 1)
+    s = question.slice(/^```ruby\n(.*?)^```\n/m, 1)
     code, output = s.split(/\n?\[Execution Result\]\n+/)
     options = question.scan(/^\*[A-Z]:\* `(.*)`/).flatten(1)
     if options.empty?
       options = question.scan(/^\*[A-Z]:\*.*\n((?:(?!\*[A-Z]:\*).*\n)*)/).flatten(1).map { |i|
-        i.slice(/^```\n(.*)^```\n/m, 1) || i
+        i.slice(/^```ruby\n(.*)^```\n/m, 1) || i
       }
     end
     xs = answer.slice(/^\*\*A\d+:.*/).scan(/\(([A-Z])\)/).flatten(1).map { |i|
@@ -39,13 +39,13 @@ def check(n)
     # puts "Q#{n}: #{result}"
   when /Which option corresponds to the execution result\?/
     question_type = 2
-    code = question.slice(/^```\n(.*?)^```\n/m, 1)
+    code = question.slice(/^```ruby\n(.*?)^```\n/m, 1)
     options = question.scan(/^(?:- )?\*[A-Z]:\* (.+)/).flatten(1).map { |i|
       i.slice(/`(.*)`/, 1) || i
     }
     if options.empty?
       options = question.scan(/^\*[A-Z]:\*.*\n((?:(?!\*[A-Z]:\*).*\n)*)/).flatten(1).map { |i|
-        i.slice(/^```\n(.*)^```\n/m, 1) || i
+        i.slice(/^```ruby\n(.*)^```\n/m, 1) || i
       }
     end
     output, = Open3.capture2e($ruby, stdin_data: code)

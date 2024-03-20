@@ -3,7 +3,7 @@ Q2: OK 2
 Q3: OK 1
 Q4: OK 1
 Q5: OK 1
-Q6: NG 2
+Q6: OK 2
 Q7: OK 1
 Q8: OK 1
 Q9: OK 1
@@ -48,6 +48,6 @@ Q47: OK 2
 Q48: OK 1
 Q49: OK 1
 Q50: OK 1
-{"OK"=>47, "NG"=>1, nil=>2}
-NG: [6]
+{"OK"=>48, "NG"=>0, nil=>2}
+NG: []
 ? : [39, 40]

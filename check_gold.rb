@@ -45,7 +45,7 @@ def check(n)
     }
     if options.empty?
       options = question.scan(/^\*[A-Z]:\*.*\n((?:(?!\*[A-Z]:\*).*\n)*)/).flatten(1).map { |i|
-        i.slice(/^```ruby\n(.*)^```\n/m, 1) || i
+        i.slice(/^```ruby\n(.*)^```\n/m, 1) || i.slice(/```\n(.*)^```\n/m, 1) || i
       }
     end
     output, = Open3.capture2e($ruby, stdin_data: code)

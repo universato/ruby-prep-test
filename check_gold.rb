@@ -9,8 +9,10 @@ $ruby = File.join(RbConfig::CONFIG["bindir"], RbConfig::CONFIG["ruby_install_nam
 def check(n)
   question = $questions[n - 1]
   answer = $answers[n - 1]
+  question_type = nil
   case question
   when /Assume that the following code must have the stated execution result|Which code produces the following execution result\?/
+    question_type = 1
     s = question.slice(/^```\n(.*?)^```\n/m, 1)
     code, output = s.split(/\n?\[Execution Result\]\n+/)
     options = question.scan(/^\*[A-Z]:\* `(.*)`/).flatten(1)
@@ -34,8 +36,9 @@ def check(n)
       o == output ? i : nil
     }
     result = xs == ys ? "OK" : "NG"
-    puts "Q#{n}: #{result}"
+    # puts "Q#{n}: #{result}"
   when /Which option corresponds to the execution result\?/
+    question_type = 2
     code = question.slice(/^```\n(.*?)^```\n/m, 1)
     options = question.scan(/^(?:- )?\*[A-Z]:\* (.+)/).flatten(1).map { |i|
       i.slice(/`(.*)`/, 1) || i
@@ -65,10 +68,11 @@ def check(n)
       end ? i : nil
     }
     result = xs == ys ? "OK" : "NG"
-    puts "Q#{n}: #{result}"
+    # puts "Q#{n}: #{result}"
   else
-    puts "Q#{n}: ?"
+    # puts "Q#{n}: ?"
   end
+  puts "Q#{n}: #{result || '?'} #{question_type}"
 end
 
 if ARGV[0]

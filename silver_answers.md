@@ -250,7 +250,7 @@ Note that while `"42A7".to_i` returns `42` because `A` is not a valid part of a 
 
 ---------------------------------------------------------------------------
 
-**A28. (b)**
+**A28: (b)**
 
 `has_key?`, `include?`, `key?`, `member?` are all aliases for a single method which returns `true` if the given key is present in the hash, and returns `false` otherwise.
 
@@ -477,4 +477,3 @@ Ruby's numeric objects define a method called `coerce` which attempts to convert
 Note that if the order was reversed (i.e. `"hi" * 5`), then the result would be `"hihihihihi"`. This is because `String` does define its own `*` operator, which is used when the string appears on the left hand side of the expression.
 
 ---------------------------------------------------------------------------
-

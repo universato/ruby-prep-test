@@ -46,8 +46,8 @@ class Test
       exam
     end
   rescue Exit
-    clean_the_screen
-    calc_and_print_result(@result)
+    puts "[ruby-prep-test] Exited"
+    calc_and_print_result(@result) if @result
   rescue EndOfTime
     clean_the_screen
     puts "# Time for exam has runned out"
